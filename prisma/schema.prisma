@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Church {
+  id         String    @id @default(uuid())
+  name       String
+  conference String
+  district   String
+  location   String
+  users      User[]
+  contacts   Contact[]
+  createdAt  DateTime  @default(now())
+}
+
+model User {
+  id         String     @id @default(uuid())
+  firebaseId String     @unique
+  firstname  String
+  lastname   String
+  email      String     @unique
+  role       String     @default("member")
+  points     Int        @default(0)
+  churchId   String?
+  church     Church?    @relation(fields: [churchId], references: [id], onDelete: SetNull)
+  contacts   Contact[]  @relation("UserContacts")
+  activities Activity[]
+  createdAt  DateTime   @default(now())
+  deletedAt  DateTime?
+}
+
+model Contact {
+  id        String    @id @default(uuid())
+  name      String
+  age       Int
+  phone     String
+  gender    String
+  location  String
+  status    String    @default("New Contact")
+  progress  Int       @default(0)
+  churchId  String
+  church    Church    @relation(fields: [churchId], references: [id], onDelete: Restrict)
+  addedById String?
+  addedBy   User?     @relation("UserContacts", fields: [addedById], references: [id], onDelete: SetNull)
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  Study     Study[]
+}
+
+model Study {
+  id        String   @id @default(uuid())
+  topic     String
+  notes     String
+  date      DateTime
+  nextDate  DateTime
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  type      String
+  points    Int
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
