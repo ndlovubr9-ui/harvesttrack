@@ -38,6 +38,54 @@ export async function GET(req: Request) {
   }
 }
 
+export async function POST(req: Request) {
+  try {
+    const uid = await verifyRequest(req);
+
+    if (!uid) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const requester = await prisma.user.findUnique({
+      where: { firebaseId: uid },
+    });
+
+    if (!requester) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    if (requester.churchId) {
+      return NextResponse.json(
+        { error: "You already belong to a church" },
+        { status: 400 }
+      );
+    }
+
+    const body = await req.json();
+
+    const church = await prisma.church.create({
+      data: {
+        name: body.name,
+        conference: body.conference,
+        district: body.district,
+        location: body.location,
+      },
+    });
+
+    await prisma.user.update({
+      where: { firebaseId: uid },
+      data: { churchId: church.id, role: "admin" },
+    });
+
+    return NextResponse.json(church);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Failed to create church" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PATCH(req: Request) {
   try {

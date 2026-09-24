@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { authFetch } from "@/lib/apiFetch";
@@ -12,16 +13,12 @@ export default function RegisterPage() {
   const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
 
-  async function register() {
-    if (!firstname || !lastname || !email || !password) {
-      showToast("Please fill in all fields.", "error");
-      return;
-    }
-
+  const register = async () => {
+    setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -31,9 +28,7 @@ export default function RegisterPage() {
 
       const response = await authFetch("/api/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstname,
           lastname,
@@ -43,124 +38,80 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         throw new Error(
-          "Account was created but saving your profile failed."
+          "Account was created but saving your profile failed. Please contact support."
         );
       }
 
-      showToast("Account created successfully!", "success");
-
-      setTimeout(() => {
-        router.push("/church/choose");
-      }, 1000);
+      router.push("/church/choose");
     } catch (error) {
       showToast(
-        error instanceof Error
-          ? error.message
-          : "Failed to create account.",
+        error instanceof Error ? error.message : "Failed to create account",
         "error"
       );
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 px-6 py-10">
-      {/* Background Glow */}
-      <div className="absolute left-[-80px] top-1/4 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl animate-pulse" />
-      <div className="absolute right-[-80px] bottom-1/4 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl animate-pulse" />
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem",
+      }}
+    >
+      <div className="neu-card" style={{ width: "100%", maxWidth: "460px" }}>
+        <h1 style={{ fontSize: "22px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "4px" }}>
+          Register
+        </h1>
+        <p style={{ color: "var(--neu-text-soft)", fontSize: "13px", marginBottom: "22px" }}>
+          Create your HarvestTrack account.
+        </p>
 
-      <div className="relative w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-700">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white">Register</h1>
-          <p className="mt-2 text-sm text-indigo-200">
-            Create your HarvestTrack account.
-          </p>
-        </div>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            register();
-          }}
-          className="space-y-5"
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="relative">
-              <input
-                id="firstname"
-                type="text"
-                placeholder=" "
-                value={firstname}
-                onChange={(e) => setFirstname(e.target.value)}
-                className="peer w-full rounded-xl border border-white/10 bg-white/5 px-4 pb-2 pt-6 text-white outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20"
-              />
-              <label
-                htmlFor="firstname"
-                className="absolute left-4 top-2 text-xs text-indigo-200 transition peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-2 peer-focus:text-xs"
-              >
-                First Name
-              </label>
-            </div>
-
-            <div className="relative">
-              <input
-                id="lastname"
-                type="text"
-                placeholder=" "
-                value={lastname}
-                onChange={(e) => setLastname(e.target.value)}
-                className="peer w-full rounded-xl border border-white/10 bg-white/5 px-4 pb-2 pt-6 text-white outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20"
-              />
-              <label
-                htmlFor="lastname"
-                className="absolute left-4 top-2 text-xs text-indigo-200 transition peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-2 peer-focus:text-xs"
-              >
-                Last Name
-              </label>
-            </div>
-          </div>
-
-          <div className="relative">
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             <input
-              id="email"
-              type="email"
-              placeholder=" "
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="peer w-full rounded-xl border border-white/10 bg-white/5 px-4 pb-2 pt-6 text-white outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20"
+              className="neu-input"
+              placeholder="First name"
+              value={firstname}
+              onChange={(e) => setFirstname(e.target.value)}
             />
-            <label
-              htmlFor="email"
-              className="absolute left-4 top-2 text-xs text-indigo-200 transition peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-2 peer-focus:text-xs"
-            >
-              Email Address
-            </label>
-          </div>
-
-          <div className="relative">
             <input
-              id="password"
-              type="password"
-              placeholder=" "
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="peer w-full rounded-xl border border-white/10 bg-white/5 px-4 pb-2 pt-6 text-white outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20"
+              className="neu-input"
+              placeholder="Last name"
+              value={lastname}
+              onChange={(e) => setLastname(e.target.value)}
             />
-            <label
-              htmlFor="password"
-              className="absolute left-4 top-2 text-xs text-indigo-200 transition peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-2 peer-focus:text-xs"
-            >
-              Password
-            </label>
           </div>
 
-          <button
-            type="submit"
-            className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-4 py-3 font-semibold text-white transition hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Create Account
+          <input
+            className="neu-input"
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            className="neu-input"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button onClick={register} disabled={loading} className="neu-btn neu-btn-accent">
+            {loading ? "Creating account..." : "Create account"}
           </button>
-        </form>
+
+          <Link href="/login" className="register-signin-link">
+            Already have an account? Sign in
+          </Link>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

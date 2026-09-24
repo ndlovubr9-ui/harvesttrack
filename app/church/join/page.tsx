@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { useToast } from "@/components/Toast";
 import { authFetch } from "@/lib/apiFetch";
@@ -76,44 +77,58 @@ export default function JoinChurchPage() {
   };
 
   if (checking) {
-    return <div style={{ padding: "3rem", textAlign: "center", color: "#666" }}>Loading...</div>;
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="neu-card" style={{ color: "var(--neu-text-soft)", fontSize: "13px" }}>Loading...</div>
+      </div>
+    );
   }
 
   return (
-    <main style={{ padding: "2rem", maxWidth: "600px" }}>
-      <h1>Join a Church</h1>
+    <main style={{ minHeight: "100vh", padding: "2rem", display: "flex", justifyContent: "center" }}>
+      <div style={{ width: "100%", maxWidth: "480px" }}>
+        <h1 style={{ fontSize: "20px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "16px" }}>
+          Join a church
+        </h1>
 
-      <input
-        placeholder="Search church name..."
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          searchChurches(e.target.value);
-        }}
-      />
+        <input
+          className="neu-input"
+          placeholder="Search church name..."
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            searchChurches(e.target.value);
+          }}
+          style={{ marginBottom: "16px" }}
+        />
 
-      <br /><br />
+        {loading && <p style={{ color: "var(--neu-text-soft)", fontSize: "13px" }}>Loading...</p>}
+        {!loading && churches.length === 0 && (
+          <p style={{ color: "var(--neu-text-soft)", fontSize: "13px" }}>
+            No churches found. Try a different search, or create a new one instead.
+          </p>
+        )}
 
-      {loading && <p>Loading...</p>}
-      {!loading && churches.length === 0 && (
-        <p>No churches found. Try a different search, or create a new one instead.</p>
-      )}
-      {!loading && churches.length > 0 && (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {churches.map((church) => (
-            <li key={church.id} style={{ marginBottom: "1rem", borderBottom: "1px solid #ccc", paddingBottom: "1rem" }}>
-              <strong>{church.name}</strong>
-              <div>{church.district}, {church.location}</div>
-              <button onClick={() => join(church.id)} disabled={joiningId === church.id}>
-                {joiningId === church.id ? "Joining..." : "Join"}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+        {!loading && churches.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {churches.map((church) => (
+              <div key={church.id} className="neu-card-sm" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ color: "var(--neu-text)", fontSize: "13px", fontWeight: 500 }}>{church.name}</div>
+                  <div style={{ color: "var(--neu-text-soft)", fontSize: "12px" }}>{church.district}, {church.location}</div>
+                </div>
+                <button onClick={() => join(church.id)} disabled={joiningId === church.id} className="neu-btn neu-btn-accent" style={{ fontSize: "12px", padding: "6px 14px" }}>
+                  {joiningId === church.id ? "Joining..." : "Join"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-      <br />
-      <a href="/church">Don&apos;t see your church? Create it instead</a>
+        <Link href="/church" style={{ display: "block", marginTop: "18px", color: "var(--neu-text-soft)", fontSize: "12px", textAlign: "center", textDecoration: "none" }}>
+          Don&apos;t see your church? Create it instead
+        </Link>
+      </div>
     </main>
   );
 }

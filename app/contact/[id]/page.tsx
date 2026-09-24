@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { useToast } from "@/components/Toast";
 import { authFetch } from "@/lib/apiFetch";
+import { statusProgress } from "@/lib/pipeline";
 
 type Contact = {
   id: string;
@@ -113,67 +115,95 @@ function ContactDetailContent() {
   };
 
   if (loading) {
-    return <main style={{ padding: "2rem" }}>Loading...</main>;
+    return <main style={{ padding: "2rem", color: "var(--neu-text-soft)" }}>Loading...</main>;
   }
 
   if (error) {
-    return <main style={{ padding: "2rem", color: "red" }}>{error}</main>;
+    return <main style={{ padding: "2rem", color: "var(--neu-danger)" }}>{error}</main>;
   }
 
   if (!contact) {
-    return <main style={{ padding: "2rem" }}>Contact not found.</main>;
+    return <main style={{ padding: "2rem", color: "var(--neu-text-soft)" }}>Contact not found.</main>;
   }
 
   return (
-    <main style={{ padding: "2rem", maxWidth: "700px" }}>
-      <a href="/members">&larr; Back to Members</a>
+    <main style={{ padding: "2rem", maxWidth: "600px", margin: "0 auto" }}>
+      <Link href="/members" style={{ color: "var(--neu-text-soft)", fontSize: "13px", textDecoration: "none" }}>
+        &larr; Back to members
+      </Link>
 
-      <h1>{contact.name}</h1>
-      <p>
-        Age {contact.age} &middot; {contact.phone} &middot; {contact.location}
-      </p>
-      <p>Status: {contact.status}</p>
+      <div className="neu-card" style={{ margin: "16px 0" }}>
+        <h1 style={{ fontSize: "20px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "4px" }}>
+          {contact.name}
+        </h1>
+        <p style={{ color: "var(--neu-text-soft)", fontSize: "13px", marginBottom: "14px" }}>
+          {contact.age} &middot; {contact.phone} &middot; {contact.location}
+        </p>
 
-      <h2>Bible Study History</h2>
-      {studies.length === 0 && <p>No studies logged yet.</p>}
-      {studies.length > 0 && (
-        <ul>
-          {studies.map((study) => (
-            <li key={study.id}>
-              <strong>{study.topic}</strong> —{" "}
-              {new Date(study.date).toLocaleDateString()}
-              {study.notes && <div>{study.notes}</div>}
-              <div>
-                Next session: {new Date(study.nextDate).toLocaleDateString()}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+          <span style={{ color: "var(--neu-text)", fontSize: "13px" }}>{contact.status}</span>
+        </div>
+        <div className="neu-progress-track">
+          <div className="neu-progress-fill" style={{ width: `${statusProgress(contact.status)}%` }} />
+        </div>
+      </div>
+
+      <div className="neu-card" style={{ marginBottom: "16px" }}>
+        <h2 style={{ fontSize: "15px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "12px" }}>
+          Bible study history
+        </h2>
+        {studies.length === 0 && (
+          <p style={{ color: "var(--neu-text-soft)", fontSize: "13px" }}>No studies logged yet.</p>
+        )}
+        {studies.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {studies.map((study) => (
+              <div key={study.id} className="neu-inset" style={{ padding: "10px 14px" }}>
+                <div style={{ color: "var(--neu-text)", fontSize: "13px", fontWeight: 500 }}>
+                  {study.topic} &middot; {new Date(study.date).toLocaleDateString()}
+                </div>
+                {study.notes && (
+                  <div style={{ color: "var(--neu-text-soft)", fontSize: "12px", marginTop: "4px" }}>
+                    {study.notes}
+                  </div>
+                )}
+                <div style={{ color: "var(--neu-text-faint)", fontSize: "11px", marginTop: "4px" }}>
+                  Next session: {new Date(study.nextDate).toLocaleDateString()}
+                </div>
               </div>
-            </li>
-          ))}
-        </ul>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
-      <h2>Log a New Study</h2>
+      <div className="neu-card">
+        <h2 style={{ fontSize: "15px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "12px" }}>
+          Log a new study
+        </h2>
 
-      <input placeholder="Topic" value={topic} onChange={(e) => setTopic(e.target.value)} />
-      <br /><br />
-
-      <textarea placeholder="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-      <br /><br />
-
-      <label>
-        Date studied:{" "}
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-      </label>
-      <br /><br />
-
-      <label>
-        Next session:{" "}
-        <input type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} />
-      </label>
-      <br /><br />
-
-      <button onClick={logStudy} disabled={saving}>
-        {saving ? "Saving..." : "Log Study"}
-      </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <input className="neu-input" placeholder="Topic" value={topic} onChange={(e) => setTopic(e.target.value)} />
+          <textarea
+            className="neu-input"
+            placeholder="Notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            style={{ resize: "vertical" }}
+          />
+          <label style={{ fontSize: "12px", color: "var(--neu-text-soft)" }}>
+            Date studied
+            <input className="neu-input" style={{ marginTop: "4px" }} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </label>
+          <label style={{ fontSize: "12px", color: "var(--neu-text-soft)" }}>
+            Next session
+            <input className="neu-input" style={{ marginTop: "4px" }} type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} />
+          </label>
+          <button onClick={logStudy} disabled={saving} className="neu-btn neu-btn-accent">
+            {saving ? "Saving..." : "Log study"}
+          </button>
+        </div>
+      </div>
     </main>
   );
 }

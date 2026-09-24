@@ -55,19 +55,21 @@ function ContactForm() {
   };
 
   return (
-    <main style={{ padding: "2rem" }}>
-      <h1>Contacts</h1>
-      <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-      <br /><br />
-      <input placeholder="Age" type="number" value={age} onChange={(e) => setAge(e.target.value)} />
-      <br /><br />
-      <input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-      <br /><br />
-      <input placeholder="Gender" value={gender} onChange={(e) => setGender(e.target.value)} />
-      <br /><br />
-      <input placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
-      <br /><br />
-      <button onClick={saveContact} disabled={saving}>{saving ? "Saving..." : "Save Contact"}</button>
+    <main style={{ padding: "2rem", maxWidth: "480px", margin: "0 auto" }}>
+      <h1 style={{ fontSize: "22px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "20px" }}>
+        Add a contact
+      </h1>
+
+      <div className="neu-card" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <input className="neu-input" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input className="neu-input" placeholder="Age" type="number" value={age} onChange={(e) => setAge(e.target.value)} />
+        <input className="neu-input" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <input className="neu-input" placeholder="Gender" value={gender} onChange={(e) => setGender(e.target.value)} />
+        <input className="neu-input" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
+        <button onClick={saveContact} disabled={saving} className="neu-btn neu-btn-accent">
+          {saving ? "Saving..." : "Save contact"}
+        </button>
+      </div>
     </main>
   );
 }

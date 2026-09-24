@@ -13,8 +13,10 @@ export function AppShell({
 
   if (checking || !user) {
     return (
-      <div style={{ padding: "3rem", textAlign: "center", color: "#666" }}>
-        Loading...
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="neu-card" style={{ color: "var(--neu-text-soft)", fontSize: "13px" }}>
+          Loading...
+        </div>
       </div>
     );
   }

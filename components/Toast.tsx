@@ -41,22 +41,32 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           right: "1.5rem",
           display: "flex",
           flexDirection: "column",
-          gap: "0.5rem",
+          gap: "10px",
           zIndex: 1000,
         }}
       >
         {toasts.map((toast) => (
           <div
             key={toast.id}
+            className="neu-card-sm"
             style={{
-              padding: "0.75rem 1rem",
-              borderRadius: "6px",
-              color: "white",
-              background: toast.type === "error" ? "#dc2626" : "#16a34a",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-              minWidth: "220px",
+              minWidth: "240px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              color: "var(--neu-text)",
+              fontSize: "13px",
             }}
           >
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: toast.type === "error" ? "var(--neu-danger)" : "var(--neu-accent)",
+                flexShrink: 0,
+              }}
+            />
             {toast.message}
           </div>
         ))}

@@ -23,10 +23,16 @@ export async function POST(req: Request) {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Failed to create user" },
-      { status: 500 }
-    );
-  }
+  console.error("REGISTER ERROR:", error);
+
+  return NextResponse.json(
+    {
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
+    },
+    { status: 500 }
+  );
+}
 }

@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { useToast } from "@/components/Toast";
 import { authFetch } from "@/lib/apiFetch";
+import { STATUS_OPTIONS, statusProgress } from "@/lib/pipeline";
 
 type Contact = {
   id: string; name: string; age: number; phone: string;
   gender: string; location: string; status: string; progress: number;
 };
-
-const STATUS_OPTIONS = ["New Contact", "Studying", "Preparing for Baptism", "Baptized"];
 
 export default function MembersPage() {
   return (
@@ -83,48 +83,68 @@ function MembersContent() {
   };
 
   return (
-    <main style={{ padding: "2rem" }}>
-      <h1>Church Members</h1>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {!loading && !error && contacts.length === 0 && <p>No members yet.</p>}
+    <main style={{ padding: "2rem", maxWidth: "860px", margin: "0 auto" }}>
+      <h1 style={{ fontSize: "22px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "20px" }}>
+        Church members
+      </h1>
+
+      {loading && <p style={{ color: "var(--neu-text-soft)", fontSize: "14px" }}>Loading...</p>}
+      {error && <p style={{ color: "var(--neu-danger)", fontSize: "14px" }}>{error}</p>}
+      {!loading && !error && contacts.length === 0 && (
+        <p style={{ color: "var(--neu-text-soft)", fontSize: "14px" }}>No members yet.</p>
+      )}
+
       {!loading && contacts.length > 0 && (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: "left" }}>Name</th>
-              <th style={{ textAlign: "left" }}>Age</th>
-              <th style={{ textAlign: "left" }}>Phone</th>
-              <th style={{ textAlign: "left" }}>Location</th>
-              <th style={{ textAlign: "left" }}>Status</th>
-              <th style={{ textAlign: "left" }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {contacts.map((contact) => (
-              <tr key={contact.id}>
-                <td>{contact.name}</td>
-                <td>{contact.age}</td>
-                <td>{contact.phone}</td>
-                <td>{contact.location}</td>
-                <td>
-                  <select value={contact.status} onChange={(e) => updateStatus(contact.id, e.target.value)}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {contacts.map((contact) => (
+            <div key={contact.id} className="neu-card-sm">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div className="neu-avatar" style={{ width: "36px", height: "36px", fontSize: "13px" }}>
+                    {contact.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ color: "var(--neu-text)", fontSize: "14px", fontWeight: 500 }}>
+                      {contact.name}
+                    </div>
+                    <div style={{ color: "var(--neu-text-soft)", fontSize: "12px" }}>
+                      {contact.age} &middot; {contact.phone} &middot; {contact.location}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <select
+                    className="neu-select"
+                    value={contact.status}
+                    onChange={(e) => updateStatus(contact.id, e.target.value)}
+                  >
                     {STATUS_OPTIONS.map((option) => (
                       <option key={option} value={option}>{option}</option>
                     ))}
                   </select>
-                </td>
-                <td>
-                  <a href={`/contacts/${contact.id}`}>View</a>
-                  {" · "}
-                  <button onClick={() => deleteContact(contact.id, contact.name)}>
+                  <Link href={`/contacts/${contact.id}`} className="neu-btn" style={{ textDecoration: "none", fontSize: "12px", padding: "6px 12px" }}>
+                    View
+                  </Link>
+                  <button
+                    onClick={() => deleteContact(contact.id, contact.name)}
+                    className="neu-btn"
+                    style={{ fontSize: "12px", padding: "6px 12px", color: "var(--neu-danger)" }}
+                  >
                     Delete
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+              </div>
+
+              <div className="neu-progress-track">
+                <div
+                  className="neu-progress-fill"
+                  style={{ width: `${statusProgress(contact.status)}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </main>
   );

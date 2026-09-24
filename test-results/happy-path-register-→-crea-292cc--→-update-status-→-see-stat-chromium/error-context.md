@@ -12,46 +12,30 @@
 # Error details
 
 ```
-Test timeout of 30000ms exceeded.
-```
+Error: expect(page).toHaveURL(expected) failed
 
-```
-Error: locator.fill: Test timeout of 30000ms exceeded.
+Expected pattern: /\/church\/choose/
+Received string:  "http://localhost:3000/register"
+Timeout: 5000ms
+
 Call log:
-  - waiting for getByPlaceholder('First Name')
+  - Expect "toHaveURL" with timeout 5000ms
+    13 × unexpected value "http://localhost:3000/register"
 
 ```
-
-# Page snapshot
 
 ```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e5]:
-    - generic [ref=e6]:
-      - heading "Register" [level=1] [ref=e7]
-      - paragraph [ref=e8]: Create your HarvestTrack account.
-    - generic [ref=e9]:
-      - generic [ref=e10]:
-        - generic [ref=e11]:
-          - textbox "First Name" [ref=e12]:
-            - /placeholder: " "
-          - generic [ref=e13]: First Name
-        - generic [ref=e14]:
-          - textbox "Last Name" [ref=e15]:
-            - /placeholder: " "
-          - generic [ref=e16]: Last Name
-      - generic [ref=e17]:
-        - textbox "Email Address" [ref=e18]:
-          - /placeholder: " "
-        - generic [ref=e19]: Email Address
-      - generic [ref=e20]:
-        - textbox "Password" [ref=e21]:
-          - /placeholder: " "
-        - generic [ref=e22]: Password
-      - button "Create Account" [ref=e23]
-  - button "Open Next.js Dev Tools" [ref=e29] [cursor=pointer]:
-    - img [ref=e30]
-  - alert [ref=e33]
+- main:
+  - heading "Register" [level=1]
+  - paragraph: Create your HarvestTrack account.
+  - textbox "First name": Test
+  - textbox "Last name": User
+  - textbox "Email address": test-1785246076430@example.com
+  - textbox "Password": TestPassword123!
+  - button "Creating account..." [disabled]
+  - link "Already have an account? Sign in":
+    - /url: /login
+- alert
 ```
 
 # Test source
@@ -64,21 +48,21 @@ Call log:
   5  |   const password = "TestPassword123!";
   6  | 
   7  |   await page.goto("/register");
-> 8  |   await page.getByPlaceholder("First Name").fill("Test");
-     |                                             ^ Error: locator.fill: Test timeout of 30000ms exceeded.
-  9  |   await page.getByPlaceholder("Last Name").fill("User");
-  10 |   await page.getByPlaceholder("Email").fill(uniqueEmail);
-  11 |   await page.getByPlaceholder("Password").fill(password);
+  8  |   await page.getByRole("textbox", { name: "First Name" }).fill("Test");
+  9  |   await page.getByRole("textbox", { name: "Last Name" }).fill("User");
+  10 |   await page.getByRole("textbox", { name: "Email Address" }).fill(uniqueEmail);
+  11 |   await page.getByRole("textbox", { name: "Password" }).fill(password);
   12 |   await page.getByRole("button", { name: "Create Account" }).click();
   13 | 
-  14 |   await expect(page).toHaveURL(/\/church\/choose/);
+> 14 |   await expect(page).toHaveURL(/\/church\/choose/);
+     |                      ^ Error: expect(page).toHaveURL(expected) failed
   15 |   await page.getByRole("button", { name: "Create a New Church" }).click();
   16 | 
   17 |   await expect(page).toHaveURL(/\/church$/);
-  18 |   await page.getByPlaceholder("Church Name").fill(`Test Church ${Date.now()}`);
-  19 |   await page.getByPlaceholder("Conference / Mission").fill("Test Conference");
-  20 |   await page.getByPlaceholder("District").fill("Test District");
-  21 |   await page.getByPlaceholder("Location").fill("Test City");
+  18 |   await page.getByRole("textbox", { name: "Church Name" }).fill(`Test Church ${Date.now()}`);
+  19 |   await page.getByRole("textbox", { name: "Conference / Mission" }).fill("Test Conference");
+  20 |   await page.getByRole("textbox", { name: "District" }).fill("Test District");
+  21 |   await page.getByRole("textbox", { name: "Location" }).fill("Test City");
   22 |   await page.getByRole("button", { name: "Save Church" }).click();
   23 | 
   24 |   await expect(page).toHaveURL(/\/dashboard/);
@@ -86,17 +70,17 @@ Call log:
   26 |   await page.getByRole("link", { name: "Add Contact" }).click();
   27 |   await expect(page).toHaveURL(/\/contact$/);
   28 | 
-  29 |   await page.getByPlaceholder("Name").fill("Jane Doe");
+  29 |   await page.getByRole("textbox", { name: "Name" }).fill("Jane Doe");
   30 |   await page.getByPlaceholder("Age").fill("34");
-  31 |   await page.getByPlaceholder("Phone").fill("555-0100");
-  32 |   await page.getByPlaceholder("Location").fill("Harare");
+  31 |   await page.getByRole("textbox", { name: "Phone" }).fill("555-0100");
+  32 |   await page.getByRole("textbox", { name: "Location" }).fill("Harare");
   33 |   await page.getByRole("button", { name: "Save Contact" }).click();
   34 | 
   35 |   await expect(page).toHaveURL(/\/members/);
   36 |   await expect(page.getByText("Jane Doe")).toBeVisible();
   37 | 
   38 |   await page.locator("select").first().selectOption("Preparing for Baptism");
-  39 |   await expect(page.locator("select").first()).toHaveValue("Preparing for Baptism");
+  39 |   await expect(page.getByText("Status updated").first()).toBeVisible();
   40 | 
   41 |   await page.getByRole("link", { name: "Dashboard" }).click();
   42 |   await expect(page).toHaveURL(/\/dashboard/);

@@ -49,40 +49,40 @@ function ManageChurchContent({ user }: { user: User }) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-  (async () => {
-    try {
-      const usersRes = await authFetch("/api/users");
+    (async () => {
+      try {
+        const usersRes = await authFetch("/api/users");
 
-      if (usersRes.status === 403) {
-        setForbidden(true);
-        return;
+        if (usersRes.status === 403) {
+          setForbidden(true);
+          return;
+        }
+
+        if (!usersRes.ok) {
+          throw new Error("Failed to load members");
+        }
+
+        const usersData: Member[] = await usersRes.json();
+        setMembers(usersData);
+
+        const me = usersData.find((m) => m.email === user.email);
+        if (me) setCurrentUserId(me.id);
+
+        const churchRes = await authFetch("/api/church/mine");
+        if (churchRes.ok) {
+          const churchData: ChurchDetails = await churchRes.json();
+          setName(churchData.name);
+          setConference(churchData.conference);
+          setDistrict(churchData.district);
+          setLocation(churchData.location);
+        }
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to load", "error");
+      } finally {
+        setLoading(false);
       }
-
-      if (!usersRes.ok) {
-        throw new Error("Failed to load members");
-      }
-
-      const usersData: Member[] = await usersRes.json();
-      setMembers(usersData);
-
-      const me = usersData.find((m) => m.email === user.email);
-      if (me) setCurrentUserId(me.id);
-
-      const churchRes = await authFetch("/api/church/mine");
-      if (churchRes.ok) {
-        const churchData: ChurchDetails = await churchRes.json();
-        setName(churchData.name);
-        setConference(churchData.conference);
-        setDistrict(churchData.district);
-        setLocation(churchData.location);
-      }
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : "Failed to load", "error");
-    } finally {
-      setLoading(false);
-    }
-  })();
-}, [user, showToast]);
+    })();
+  }, [user, showToast]);
 
   const saveChurch = async () => {
     setSavingChurch(true);
@@ -132,67 +132,78 @@ function ManageChurchContent({ user }: { user: User }) {
   };
 
   if (loading) {
-    return <main style={{ padding: "2rem" }}>Loading...</main>;
+    return <main style={{ padding: "2rem", color: "var(--neu-text-soft)" }}>Loading...</main>;
   }
 
   if (forbidden) {
     return (
       <main style={{ padding: "2rem" }}>
-        <p>Only church admins can access this page.</p>
-        <button onClick={() => router.push("/dashboard")}>Back to Dashboard</button>
+        <div className="neu-card" style={{ maxWidth: "420px" }}>
+          <p style={{ color: "var(--neu-text)", fontSize: "14px", marginBottom: "14px" }}>
+            Only church admins can access this page.
+          </p>
+          <button onClick={() => router.push("/dashboard")} className="neu-btn">
+            Back to dashboard
+          </button>
+        </div>
       </main>
     );
   }
 
   return (
-    <main style={{ padding: "2rem", maxWidth: "700px" }}>
-      <h1>Manage Church</h1>
+    <main style={{ padding: "2rem", maxWidth: "700px", margin: "0 auto" }}>
+      <h1 style={{ fontSize: "22px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "20px" }}>
+        Manage church
+      </h1>
 
-      <h2>Church Details</h2>
-      <p style={{ color: "#666" }}>Re-enter your church&apos;s details below to update them.</p>
+      <div className="neu-card" style={{ marginBottom: "24px" }}>
+        <h2 style={{ fontSize: "15px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "4px" }}>
+          Church details
+        </h2>
+        <p style={{ color: "var(--neu-text-soft)", fontSize: "12px", marginBottom: "14px" }}>
+          Update your church&apos;s details below.
+        </p>
 
-      <input placeholder="Church Name" value={name} onChange={(e) => setName(e.target.value)} />
-      <br /><br />
-      <input placeholder="Conference / Mission" value={conference} onChange={(e) => setConference(e.target.value)} />
-      <br /><br />
-      <input placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} />
-      <br /><br />
-      <input placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
-      <br /><br />
-      <button onClick={saveChurch} disabled={savingChurch}>
-        {savingChurch ? "Saving..." : "Update Church"}
-      </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <input className="neu-input" placeholder="Church name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="neu-input" placeholder="Conference / mission" value={conference} onChange={(e) => setConference(e.target.value)} />
+          <input className="neu-input" placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} />
+          <input className="neu-input" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
+          <button onClick={saveChurch} disabled={savingChurch} className="neu-btn neu-btn-accent">
+            {savingChurch ? "Saving..." : "Update church"}
+          </button>
+        </div>
+      </div>
 
-      <h2>Members</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: "left" }}>Name</th>
-            <th style={{ textAlign: "left" }}>Email</th>
-            <th style={{ textAlign: "left" }}>Points</th>
-            <th style={{ textAlign: "left" }}>Role</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div className="neu-card">
+        <h2 style={{ fontSize: "15px", fontWeight: 500, color: "var(--neu-text)", marginBottom: "14px" }}>
+          Members
+        </h2>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {members.map((member) => (
-            <tr key={member.id}>
-              <td>{member.firstname} {member.lastname}</td>
-              <td>{member.email}</td>
-              <td>{member.points}</td>
-              <td>
-                <select
-                  value={member.role}
-                  onChange={(e) => changeRole(member.id, e.target.value)}
-                  disabled={member.id === currentUserId}
-                >
-                  <option value="member">member</option>
-                  <option value="admin">admin</option>
-                </select>
-              </td>
-            </tr>
+            <div key={member.id} className="neu-inset" style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ color: "var(--neu-text)", fontSize: "13px", fontWeight: 500 }}>
+                  {member.firstname} {member.lastname}
+                </div>
+                <div style={{ color: "var(--neu-text-soft)", fontSize: "12px" }}>
+                  {member.email} &middot; {member.points} pts
+                </div>
+              </div>
+              <select
+                className="neu-select"
+                value={member.role}
+                onChange={(e) => changeRole(member.id, e.target.value)}
+                disabled={member.id === currentUserId}
+              >
+                <option value="member">member</option>
+                <option value="admin">admin</option>
+              </select>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </main>
   );
 }
